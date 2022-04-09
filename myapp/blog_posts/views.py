@@ -6,13 +6,6 @@ from myapp.blog_posts.forms import BlogPostForm
 
 blog_posts = Blueprint('blog_posts', __name__)
 
-
-# Add this to the bottom of __init__.py
-
-# Linking and registering blog_posts views Blueprint
-from myapp.blog_posts.views import blog_posts
-app.register_blueprint(blog_posts)
-
 @blog_posts.route('/create', methods=['GET', 'POST'])
 @login_required
 def create_post():
@@ -56,4 +49,16 @@ def update(blog_post_id):
 
   return render_template('create_post.html', title='Updating', form=form)
 
+@blog_posts.route('/<int:blog_post_id>/delete',methods=['GET','POST'])
+@login_required
+def delete_post(blog_post_id):
+
+    blog_post = BlogPost.query.get_or_404(blog_post_id)
+    if blog_post.author != current_user:
+        abort(403)
+
+    db.session.delete(blog_post)
+    db.session.commit()
+    flash('Blog Post Deleted')
+    return redirect(url_for('core.index'))
   
